@@ -32,6 +32,13 @@
 (defconstant *drone-angular-velocity* (/ pi 2))
 (defconstant *drone-speed* 150)
 
+
+(defparameter *drones* '())             ; list of drones in game
+
+;;; 
+(defun dt-s ()
+  (float (/ (sdl:dt) 1000)))
+
 ;;; Drones
 (defclass drone ()
   ((position)
@@ -48,6 +55,11 @@
 (defun destroy-drone (drone)
   (setf *available-bindings* (cons (slot-value drone 'keybindings)
                                    *available-bindings*)))
+
+(defun spawn-a-new-drone ()
+  (if (not *available-bindings*)
+      (push (make-drone)
+            *drones*)))
 
 ;; Update and draw methods
 
@@ -66,6 +78,26 @@
 
 (defmethod draw ((a-drone drone)))
 
+;;; Game stuff
+(defun update-game ()
+  (process-input)
+  ;; update world
+  (mapc #'update *drones*))
+
+(defun render-game ()
+  (mapc #'draw *drones*))
+
+;;; FIXME this function looks like crap.
+(let ((space-pressed nil))
+  (defun process-input ()
+    "Process input not directly related to controlling the drones."
+    ;; Process keys
+    ;; Space = spawn new drone
+    (let ((current-space-state (sdl:key-down-p :sdl-key-space)))
+      (if (and current-space-state (not space-pressed))
+          (spawn-a-new-drone))
+      (setf space-pressed current-space-state))))
+
 
 
 ;;; Main window and stuff.
@@ -82,6 +114,9 @@
     (sdl:with-events ()
       (:idle
        ;; TODO run game
+       (sdl:with-timestep ()
+                          (update-game))
+       (render-game)
        (sdl:update-display))
 
       (:quit-event ()
