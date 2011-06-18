@@ -6,6 +6,17 @@
 ;;; Load libs we need
 (ql:quickload 'lispbuilder-sdl)
 
+;;; Display constants
+(defparameter +screen-width+ 800)
+(defparameter +screen-height+ 600)
+(defparameter +window-title+ "Drones")
+
+;;; Simulation constants
+(defparameter +fixed-dt+ (floor (/ 1000 30))) ; 30 steps / second
+(defparameter +maximum-dt+ 500) ; maximum dt allowed - time step
+                                ;will be trimmed to that value
+
+
 (defparameter *keybindings* '((:sdl-key-r :sdl-key-f)
                               (:sdl-key-u :sdl-key-j)
                               (:sdl-key-e :sdl-key-d)
@@ -17,6 +28,9 @@
 
 ;;; World
 (defparameter *available-bindings* *keybindings*)
+
+(defconstant *drone-angular-velocity* (/ pi 2))
+(defconstant *drone-speed* 150)
 
 ;;; Drones
 (defclass drone ()
@@ -40,10 +54,36 @@
 (defmethod update ((a-drone drone))
   (with-slots (position velocity keybindings) a-drone
     ;; rotate vectors based on keypresses
+    (setf velocity (rotated-vector-2d velocity
+                                      (cond ((sdl:key-down-p (car keybindings))
+                                             (* *drone-angular-velocity* (sdl:dt)))
+                                            ((sdl:key-down-p (cdr keybindings))
+                                             (* *drone-angular-velocity* (sdl:dt) -1))
+                                            (t 0))))
     ;; update position
-    (setf position nil
-          ;; fixme todo finish it
-          )
-    ))
+    (setf position (add-vectors (scaled-vector velocity (sdl:dt))
+                                position))))
 
 (defmethod draw ((a-drone drone)))
+
+
+
+;;; Main window and stuff.
+
+(defun run-game ()
+  (sdl:with-init (sdl:SDL-INIT-VIDEO sdl:SDL-INIT-AUDIO)
+    (sdl:window +screen-width+ +screen-height+  ;screen resolution
+                :title-caption +window-title+
+                :fps (make-instance 'sdl:fps-timestep
+                                    :max-dt +maximum-dt+ ; timestep upper bound
+                                    :dt +fixed-dt+); fixed time step
+                :video-driver "directx"
+                :double-buffer t)
+    (sdl:with-events ()
+      (:idle
+       ;; TODO run game
+       (sdl:update-display))
+
+      (:quit-event ()
+                   (format t "Quitting")
+                   t))))
