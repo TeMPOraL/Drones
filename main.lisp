@@ -6,6 +6,7 @@
 ;;; Load libs we need
 (ql:quickload 'lispbuilder-sdl)
 
+(load "math.lisp")
 ;;; Display constants
 (defparameter +screen-width+ 800)
 (defparameter +screen-height+ 600)
@@ -29,7 +30,7 @@
 ;;; World
 (defparameter *available-bindings* *keybindings*)
 
-(defconstant *drone-angular-velocity* (/ pi 2))
+(defconstant *drone-angular-velocity* (* (/ pi 2) 3))
 (defconstant *drone-speed* 150)
 
 
@@ -41,8 +42,8 @@
 
 ;;; Drones
 (defclass drone ()
-  ((position)
-   (velocity)
+  ((position :initarg :position)
+   (velocity :initarg :velocity)
    (keybindings :initarg :keybindings)))
 
 (defun make-drone ()
@@ -68,15 +69,24 @@
     ;; rotate vectors based on keypresses
     (setf velocity (rotated-vector-2d velocity
                                       (cond ((sdl:key-down-p (car keybindings))
-                                             (* *drone-angular-velocity* (sdl:dt)))
+                                             (* *drone-angular-velocity* (dt-s) -1))
                                             ((sdl:key-down-p (cdr keybindings))
-                                             (* *drone-angular-velocity* (sdl:dt) -1))
+                                             (* *drone-angular-velocity* (dt-s) ))
                                             (t 0))))
     ;; update position
-    (setf position (add-vectors (scaled-vector velocity (sdl:dt))
+    (setf position (add-vectors (scaled-vector velocity (dt-s))
                                 position))))
 
-(defmethod draw ((a-drone drone)))
+(defmethod draw ((a-drone drone))
+  (with-slots (position velocity) a-drone
+    (sdl:draw-circle-* (round (elt position 0)) (round (elt position 1)) 5 :color sdl:*yellow*)
+    (let ((line-end (add-vectors position (scaled-vector (normalized-vector velocity)
+                                                         5))))
+      (sdl:draw-line-* (round (elt position 0))
+                       (round (elt position 1))
+                       (round (elt line-end 0))
+                       (round (elt line-end 1))
+                       :color sdl:*yellow*))))
 
 ;;; Game stuff
 (defun update-game ()
@@ -85,6 +95,7 @@
   (mapc #'update *drones*))
 
 (defun render-game ()
+  (sdl:clear-display sdl:*black*)
   (mapc #'draw *drones*))
 
 ;;; FIXME this function looks like crap.
