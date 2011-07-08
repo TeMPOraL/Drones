@@ -50,15 +50,17 @@
   "Spawn a new drone, giving (TODO) its position and velocity."
   (if (null *available-bindings*)
       nil
-      (prog1 (make-instance 'drone :keybindings (car *available-bindings*))
-        (setf *available-bindings* (cdr *available-bindings*)))))
+      (prog1 (make-instance 'drone :keybindings (car *available-bindings*) :position (make-vector-2d 42 42) :velocity (make-vector-2d 15 15))
+        (pop *available-bindings*))))
 
 (defun destroy-drone (drone)
+  (format t "Drone destroyed~%")
   (setf *available-bindings* (cons (slot-value drone 'keybindings)
                                    *available-bindings*)))
 
 (defun spawn-a-new-drone ()
-  (if (not *available-bindings*)
+  (format t "Spawning a new drone; list: ~a~%" *drones*)
+  (if *available-bindings*
       (push (make-drone)
             *drones*)))
 
@@ -70,7 +72,7 @@
     (setf velocity (rotated-vector-2d velocity
                                       (cond ((sdl:key-down-p (car keybindings))
                                              (* *drone-angular-velocity* (dt-s) -1))
-                                            ((sdl:key-down-p (cdr keybindings))
+                                            ((sdl:key-down-p (cadr keybindings))
                                              (* *drone-angular-velocity* (dt-s) ))
                                             (t 0))))
     ;; update position
