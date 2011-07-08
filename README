@@ -1,4 +1,14 @@
+-*- org -*-
+#+title: Drones
+
 How many objects can you control at the same time?
 
 The goal of this project is to create a playground for testing that,
 and maybe mold it into a full computer game somewhen later on.
+
+** Controls
+
+Use *Space* to spawn drones. Each drone is controlled by two keys, and
+every new drone will take an unused key pair from the following set:
+
+((r f) (u j) (e d) (i k) (w s) (o l) (q a)))
