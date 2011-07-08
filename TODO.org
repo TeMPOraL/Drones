@@ -1,0 +1,19 @@
+A small TODO list for the project.
+
+** General
+*** TODO Add letter markers to Drones so that one can see, which keys control which one.
+
+** GFX
+*** TODO Make some Drones graphics
+*** TODO Implement a nice starfield background
+*** TODO Get some Asteroid graphics
+*** TODO Get some Jumper graphics
+
+** Asteroids mode
+*** TODO Implement Asteroid objects
+*** TODO Implement collision detection
+*** TODO Implement Asteroid splitting
+
+** Minor ideas
+*** TODO Implement (optional) destruction of Drones when they go off-screen.
+

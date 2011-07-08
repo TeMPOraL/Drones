@@ -40,6 +40,12 @@
 
 (defparameter *drones* '())             ; list of drones in game
 
+(defun reset-world ()
+  "A function to reset the game world - cause we don't really want to
+reload the file all the time."
+  (setq *available-bindings* *keybindings*
+        *drones* nil))
+
 ;;; 
 (defun dt-s ()
   (float (/ (sdl:dt) 1000)))
