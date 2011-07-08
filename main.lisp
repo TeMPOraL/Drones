@@ -33,6 +33,10 @@
 (defconstant *drone-angular-velocity* (* (/ pi 2) 3))
 (defconstant *drone-speed* 150)
 
+(defconstant *drone-launch-vector* #(0 -1))
+
+(defconstant *jumper-position* (make-vector-2d (round (/ +screen-height+ 2))
+                                               (- +screen-height+ 42)))
 
 (defparameter *drones* '())             ; list of drones in game
 
@@ -50,7 +54,10 @@
   "Spawn a new drone, giving (TODO) its position and velocity."
   (if (null *available-bindings*)
       nil
-      (prog1 (make-instance 'drone :keybindings (car *available-bindings*) :position (make-vector-2d 42 42) :velocity (make-vector-2d 15 15))
+      (prog1 (make-instance 'drone
+                            :keybindings (car *available-bindings*)
+                            :position (copy-seq *jumper-position*)
+                            :velocity (scaled-vector *drone-launch-vector* *drone-speed*))
         (pop *available-bindings*))))
 
 (defun destroy-drone (drone)
